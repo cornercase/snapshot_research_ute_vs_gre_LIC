@@ -1,5 +1,5 @@
 function out = genImagePathStructs(imRoot,subPathFile)
-
+global verbose;
 fid = fopen(subPathFile,'r');
 paths = {};
 while ~feof(fid)
@@ -12,7 +12,7 @@ fclose(fid);
 out = {};
 lastVisit = '';
 for n=1:length(paths) 
-    fprintf('Running %02i\n',n);
+    if verbose>0; fprintf('Running %02i\n',n);end
     roiFiles = dir([imRoot paths{n} '/liver-*.dcm.mat']);
     roiPathCell = strsplit(paths{n},'/');
     patID = roiPathCell{1};
@@ -28,6 +28,10 @@ for n=1:length(paths)
     imname = roiFiles(1).name;
     imname = imname(7:end-4);
     roiPath = [imRoot '/' paths{n} '/' roiFiles(1).name];
+    savePath = ['./results' imRoot(2:end) '/' patfolder '/results.mat'];
+    patID = regexp(roiPath,'(./files//3T_)(?<patID>[0-9]+)([A-Z_]*/).+','names');
+    patID = sprintf('%03i',str2num(patID.patID));
+    
     if strfind(roiPath,'/UTE_')
         isUTE = 1;
         imPaths = buildUTEPaths([imRoot '/' patfolder],imname,roiFiles(1).name);
@@ -41,6 +45,8 @@ for n=1:length(paths)
     else
         outExam.gre = outS;
     end
+    outExam.savePath = savePath;
+    outExam.patID = patID;
     if (~isempty(outExam.ute) && ~isempty(outExam.gre))
        out{end+1} = outExam;
     end
@@ -55,7 +61,9 @@ function utepaths = buildUTEPaths(patFolder,imname,roiname)
     imnumber = roiname(15:end-8);
     utepaths = {};
     for n=1:length(imfolders)
-        if ~strcmp(imfolders(n).name(end-1:end),'_0')
+        test1 = strcmp(imfolders(n).name(end-1:end),'_0');
+        test2 = length(strfind(imfolders(n).name,'_FATWATER_'));
+        if ~sum(test1+test2)
             imagename = dir([patFolder '/' imfolders(n).name '/IM-*-0001.dcm']);
             imagename.name(9:end-4) = imnumber;
             utepaths{end+1} = [patFolder '/' imfolders(n).name '/' imagename.name];

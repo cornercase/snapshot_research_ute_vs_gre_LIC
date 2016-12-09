@@ -1,0 +1,1 @@
+results = runParallelFitting(patMatFiles, myvars, hpcc, appendRoot,preguessT2s);
