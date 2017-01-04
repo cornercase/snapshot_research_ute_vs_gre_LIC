@@ -19,7 +19,10 @@ for n=1:length(paths)
     if ~strcmp(lastVisit,[roiPathCell{1} '/' roiPathCell{2}])
         %new patient
         lastVisit = [roiPathCell{1} '/' roiPathCell{2}];
-        outExam = struct('ute',[],'gre',[],'demo',[]);
+        outExam = struct('ute',[],'gre',[],'demo',[],'clinical',[]);
+        [imPath,roiPath] = buildClinicalPaths(imRoot,lastVisit);
+        outS = struct('im',imPath,'roi',roiPath);
+        outExam.clinical = outS;
     end
         
     imfolder = strjoin(roiPathCell(1:end-1),'/');
@@ -55,6 +58,29 @@ end
 
 end  %end of the title function
 
+
+function [cgrepath, roiPath] = buildClinicalPaths(imRoot,clinicalFolder)
+
+    troot = strjoin({imRoot,clinicalFolder,'clinical'},filesep);
+    imfolders = dir(strjoin({troot,'Liver_R2*'},filesep));
+    
+    for n=1:length(imfolders)
+        try
+            roiFile = dir(strjoin({troot,imfolders(n).name,'ROI','liver-*.dcm.mat'},filesep));
+            roiInfo = regexp(roiFile.name,'IM-(?<number>[0-9]+)-(?<slice>[0-9]+).dcm.mat','names');
+            imageFolder = [troot '/' imfolders(n).name];
+            cgrepath = buildGREPaths(imageFolder);
+            %cgrepath = strjoin({imRoot '/' clinicalFolder '/' ...
+            %    'clinical/' imfolders(n).name},'/');
+            roiPath = [imRoot '/' clinicalFolder '/' ...
+                'clinical/' imfolders(n).name '/ROI/liver-IM-' roiInfo.number ...
+                '-' roiInfo.slice '.dcm.mat'];
+        catch err
+            
+        end
+    end
+    
+end
 
 function utepaths = buildUTEPaths(patFolder,imname,roiname)
     imfolders = dir([patFolder '/UTE_*']);
