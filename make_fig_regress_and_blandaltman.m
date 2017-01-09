@@ -74,19 +74,39 @@ h = legend(gca,legendText,'Location','NorthWest');
 kids = get(h);
 set(get(kids.Children(1),'Children'),'LineWidth',2);
 set(get(kids.Children(3),'Children'),'LineWidth',2)
-title('3T research fits vs 1.5T rician estimates','Interpreter','latex','FontSize',14);
+tstring = '3T research fits vs 1.5T rician estimates';
+title(tstring,'Interpreter','latex','FontSize',14);
 end %end not comparing rician values
+
+highLICindex = lic_1p5t>25;
 
 xstring = 'Mean LIC $[\frac{mg}{g}]$'; %\sffamily\bfseries 
 h = figure(151); clf; fhandles{end+1} = struct('handle',h,'suffix','ute_gre');
-bland_altman(ute_lic_median,gre_lic_median,'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter);
-if p.Results.addTitle; title('ExpC Bland Altman LIC UTE vs 3T GRE','Interpreter','latex','FontSize',14);end
+[data_mean,data_diff,md,sd,tstats] = bland_altman(ute_lic_median,gre_lic_median,'splitPopulation',{~highLICindex,highLICindex},...
+    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80]);
+%bland_altman(ute_lic_median,gre_lic_median,'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter);
+
+tstring = 'ExpC Bland Altman LIC UTE vs 3T GRE';
+if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
+fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
+fprintf('\n\n');
+
 h = figure(152); clf;fhandles{end+1} = struct('handle',h,'suffix','ute_clin');
-bland_altman(lic_1p5t,ute_lic_median,'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter);
-if p.Results.addTitle; title('ExpC Bland Altman LIC UTE vs 1.5T GRE','Interpreter','latex','FontSize',14);end
+[data_mean,data_diff,md,sd,tstats] = bland_altman(lic_1p5t,ute_lic_median,'splitPopulation',{~highLICindex,highLICindex},...
+    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter','yBounds',[-80 80]);
+tstring = 'ExpC Bland Altman LIC UTE vs 1.5T GRE';
+if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
+fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
+fprintf('\n\n');
+
 h = figure(153); clf;fhandles{end+1} = struct('handle',h,'suffix','gre_clin');
-bland_altman(lic_1p5t,gre_lic_median,'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter);    
-if p.Results.addTitle; title('ExpC Bland Altman LIC 1.5T GRE vs 3T GRE','Interpreter','latex','FontSize',14);end
+[data_mean,data_diff,md,sd,tstats] = bland_altman(lic_1p5t,gre_lic_median,'splitPopulation',{~highLICindex,highLICindex},...
+    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80]);    
+tstring = 'ExpC Bland Altman LIC 1.5T GRE vs 3T GRE';
+if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
+fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
+fprintf('\n\n');
+
 h = figure(157); clf;fhandles{end+1} = struct('handle',h,'suffix','phantom_UTE');
 regopts.xlab = 'MnCl$_2$ Concentration $[\frac{\mu mol}{L} ]$'
 regopts.ylab = 'Relaxation Rate $R_2^*$ $[Hz]$';
@@ -170,34 +190,6 @@ end
 
 end
 
-function [] = doBlandAltman(ute,gre,res,exams,h,opts);
-
-hold on;
-if isfield(opts, 'color')
-    col = opts.color;
-else
-    col = 'b';
-end
-if (isfield(opts, 'lineOn') && opts.lineOn) || ~isfield(opts,'lineOn')
-    plot([0 50],[0 50]);
-end
-scatter(ute-gre,gre,res,col);
-set(gca,'FontName',opts.tickFontName,'FontSize',opts.tickFontSize);
-ht = xlabel([opts.xlab],'Interpreter',opts.textInterpreter,'FontSize',opts.labelFontSize); 
-ht = ylabel([opts.ylab],'Interpreter',opts.textInterpreter,'FontSize',opts.labelFontSize);
-offsets = make_offsets();
-for n=1:length(exams)
-    for m=1:length(offsets)
-        tid=(offsets(m,1)); 
-        if strcmp(tid{1},exams{n}.patID)
-            toffset = [offsets{m,2} offsets{m,3}];
-        end
-    end
-%    text(ute(n)+toffset(1),gre(n)+toffset(2),exams{n}.patID(2:3));
-end
-
-
-end
 
 %%
 
@@ -205,28 +197,39 @@ function [] = doMnCl2PhantomFigure(fhand,opts);
 %copied from ownCloud/research/results/scanning/ISMRM2016/UTE
 %modified 28-Dec-2016 by Eamon
 thephantom = [...
-0, 10  ;...
-0.50, 55.1  ;...
-0.75, 72.4  ;...
-1.0, 99.7  ;...
-1.5, 132.8  ;...
-2.0, 193.1;...
-2.5, 332;...
-3.5, 384.4  ;...
-5.0, 715.2  ;...
-8.0, 1013.1  ;...
-12, 1313.0  ;...
-16, 1833.4  ;...
-24, 2827 ];
+0, 10 , 10.00 ;...
+0.50, 55.1 ,63.03 ;...
+0.75, 72.4 , 92.99 ;...
+1.0, 99.7 ,120.11 ;...
+1.5, 132.8 , 176.59;...
+2.0, 193.1, 237.43;...
+2.5, 332, 302.45;...
+3.5, 384.4 , 427.11 ;...
+5.0, 715.2 ,599.85 ;...
+8.0, 1013.1 , 987.31 ;...
+12, 1313.0 , 1443.87 ;...
+16, 1833.4, 1916.87  ;...
+24, 2827, 1987.69 ]; %[concen uteR2s greR2s]
+
 
 pcola = thephantom(:,1);
 pcolb = thephantom(:,2);
 
+[regress_ute gof_ute] = fit(thephantom(:,1),thephantom(:,2),'poly1');
+regress_ute_conf = predint(regress_ute,thephantom(:,1),0.95);
+[regress_gre gof_gre] = fit(thephantom(1:end-1,1),thephantom(1:end-1,3),'poly1');
+regress_gre_conf = predint(regress_gre,thephantom(:,1),0.95);
 
+disp('ute');
+regress_ute
+gof_ute
+disp('gre');
+regress_gre
+gof_gre
 % fit y = ax+b
-linfit_a = 116.7;
-linfit_b = 1.589;
-rsq = 0.9955;
+%linfit_a = 116.7;
+%linfit_b = 1.589;
+%rsq = 0.9955;
 
 figure(fhand);
 tpos = get(gcf,'Position');
@@ -235,25 +238,65 @@ set(gcf,'Position',[tpos(1:2) 560 420]);
 %set(gcf,'PaperSize',[560 420]);
 %set(gcf,'PaperPosition',[0 0 560 420]);
 
-plot(thephantom(:,1),thephantom(:,2),'k.','MarkerSize',30);
+% OMG what a dirty dirty hack
+plot([0 45],[0 45]);
+drawnow;
+tempAxisPos = get(gca,'Position');
+clf;
+%seriouly, the self-hate is deserved
+h_sp1 = subplot(1,2,1);
+hold on;
+%set(h_sp1,'Position',tempAxisPos,'YAxisLocation','right');
+set(h_sp1,'YAxisLocation','right','XTick',[]);
+set(h_sp1,'FontName',opts.tickFontName,'FontSize',opts.tickFontSize);
+hlsp1 = ylabel('Equivalent LIC $[\frac{mg}{g}]$','Interpreter',opts.textInterpreter);
+
+plot([0 45],[0 45]);
+h_sp2 = subplot(1,2,2);
+plot(thephantom(:,1),thephantom(:,2),'bo','MarkerSize',10,'LineWidth',2);
+set(h_sp2,'Position',tempAxisPos);
+set(h_sp1,'Position',tempAxisPos);
+set(hlsp1,'Position',get(hlsp1,'Position')-[-0.10 2 0]);
+% definitely screw whoever has to maintain this cuz reasons
 hold on;
 %plot(thephantom(:,1),thephantom(:,1).*80*1.414, 'k--','LineWidth',3);
-plot(thephantom(:,1),linfit_a.*thephantom(:,1)+linfit_b,'k','LineWidth',2);
+%plot(thephantom(:,1),linfit_a.*thephantom(:,1)+linfit_b,'k','LineWidth',2);
+plot(regress_ute,'b');
+plot(thephantom(:,1),thephantom(:,3),'rx','MarkerSize',10,'LineWidth',2);
+plot(regress_gre,'r');
+plot(thephantom(:,1),regress_ute_conf,'--b');
+plot(thephantom(:,1),regress_gre_conf,'--r');
 set(gca,'FontName',opts.tickFontName,'FontSize',opts.tickFontSize);
-htx = xlabel(opts.xlab,'Interpreter',opts.textInterpreter);
+
 hty = ylabel(opts.ylab,'Interpreter',opts.textInterpreter);
+htx = xlabel(opts.xlab,'Interpreter',opts.textInterpreter);
+set(h_sp1,'YTickLabel',[...
+    '   ';...
+    '  5';...
+    ' 10';...
+    ' 15';...
+    ' 20';...
+    ' 25';...
+    ' 30';...
+    ' 35';...
+    ' 40';...
+    ' 45']);
 set(hty,'Position',get(hty,'Position')+[-.2 0 0]);
-set(htx,'Position',get(htx,'Position')+[-.2 0 0]);
+%set(htx,'Position',get(htx,'Position')+[-.2 0 0]);
 %MnCl$_2$ Concentration $[\muM]$
 %xlabel('this','Interpreter',opts.textInterpreter);
 %Relaxation Rate $R_2^*$ $[Hz]$
 %ylabel('that','Interpreter',opts.textInterpreter);
-h = legend('Vial Relaxation Rates', ... %'Theoretical Relaxation Rate',...
-    ['Linear Regression' sprintf('\n') 'y=116.7*[mM MnCl2] + 1.589' sprintf('\n') 'R^{2}=0.9955']);
+h = legend('UTE R_2^* Estimate', ... %'Theoretical Relaxation Rate',...
+    'UTE Linear Regression',...
+    'GRE R_2^* Estimates',...
+    'GRE Linear Regression (excl 24 mM vial)');
 
+%['Linear Regression' sprintf('\n') 'y=116.7*[mM MnCl2] + 1.589' sprintf('\n') 'R^{2}=0.9955'],...
 %                                    [x y  ignore ignore]
-set(h, 'Position', get(h,'Position')+[-.30 .013 0 0]);
+set(h, 'Position', get(h,'Position')+[-.20 .013 0 0]);
 set(h,'Box','off');
+%{
 ha = findall(h);
 for n=1:size(ha,1)
     try
@@ -266,7 +309,16 @@ for n=1:size(ha,1)
         continue;
     end
 end
+%}
 %saveas(gcf,'MnCl2_UTE_calibration','pdf');
+ylim([0 3561.525]);
+set(h_sp2,'Box','off');
+xl = get(gca,'XLim'); yl = get(gca,'YLim');
+plot(xl,[yl(2) yl(2)],'k');
+plot([xl(2) xl(2)],yl,'k');
+for n=1:8
+    plot([xl(2)-0.2 xl(2)],[5*n 5*n]*(3561.525/45.0),'k');
+end
 end
 
 function out = findInd(c,str)
@@ -285,6 +337,18 @@ function out = findInd(c,str)
     end
 end
 
+function [] = printstats(data_mean,data_diff,md,sd,tstats)
+    pstring = [...
+        'Data mean  = %0.2f\n'...
+        'Data sd    = %0.2f\n'...
+        'Data tstat = %0.2f\n'...
+        'Data ts sd = %0.2f\n'...
+        'Hyp. true  = %i\n\n'];
+    for n=1:2
+        ts = tstats{n};
+        fprintf(pstring,md{n},sd{n},ts.stats.tstat,ts.stats.sd,ts.h);
+    end
+end
 
 function offsets = make_offsets()
 offsets = cell(0,3);
