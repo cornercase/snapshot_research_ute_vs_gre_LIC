@@ -2,6 +2,7 @@ function [] = make_fig_correlation(varargin)
 
 p=inputParser();
 p.addParameter('savePrefix',[]);
+p.addParameter('saveOnlyHandle',[]);
 p.addParameter('addRicianPlots',0);
 p.addParameter('addTitle',1);
 p.parse(varargin{:});
@@ -29,7 +30,7 @@ for n=1:length(exams)
      ute_lic_rexp_med(n) = getLIC(median(rexp_res{findInd(rexp_res,'rexp1_ute')}.T2),'R2*','3T','rician');
      gre_lic_rexp_med(n) = getLIC(median(rexp_res{findInd(rexp_res,'rexp1_gre')}.T2),'R2*','3T','rician');
      lic_1p5t(n) = getLIC(demographics.R2s_Liver_1p5T,'R2*','1.5T','expc');
-     lic_1p5t_rexp(n) = getLIC(median(resCell{5}.T2),'R2*','1.5T','rician');
+%     lic_1p5t_rexp(n) = getLIC(median(resCell{5}.T2),'R2*','1.5T','rician');
 end
 %%
 legendText = {'y=x'};
@@ -78,14 +79,12 @@ tstring = '3T research fits vs 1.5T rician estimates';
 title(tstring,'Interpreter','latex','FontSize',14);
 end %end not comparing rician values
 
-highLICindex = lic_1p5t>25;
+highLICindex = lic_1p5t>=25;
 
 xstring = 'Mean LIC $[\frac{mg}{g}]$'; %\sffamily\bfseries 
 h = figure(151); clf; fhandles{end+1} = struct('handle',h,'suffix','ute_gre');
 [data_mean,data_diff,md,sd,tstats] = bland_altman(ute_lic_median,gre_lic_median,'splitPopulation',{~highLICindex,highLICindex},...
     'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80]);
-%bland_altman(ute_lic_median,gre_lic_median,'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter);
-
 tstring = 'ExpC Bland Altman LIC UTE vs 3T GRE';
 if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
 fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
@@ -93,7 +92,8 @@ fprintf('\n\n');
 
 h = figure(152); clf;fhandles{end+1} = struct('handle',h,'suffix','ute_clin');
 [data_mean,data_diff,md,sd,tstats] = bland_altman(lic_1p5t,ute_lic_median,'splitPopulation',{~highLICindex,highLICindex},...
-    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter','yBounds',[-80 80]);
+    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80],...
+    'showMeanStd',0);
 tstring = 'ExpC Bland Altman LIC UTE vs 1.5T GRE';
 if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
 fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
@@ -101,7 +101,8 @@ fprintf('\n\n');
 
 h = figure(153); clf;fhandles{end+1} = struct('handle',h,'suffix','gre_clin');
 [data_mean,data_diff,md,sd,tstats] = bland_altman(lic_1p5t,gre_lic_median,'splitPopulation',{~highLICindex,highLICindex},...
-    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80]);    
+    'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80],...
+    'showMeanStd',0);    
 tstring = 'ExpC Bland Altman LIC 1.5T GRE vs 3T GRE';
 if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
 fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
@@ -112,24 +113,12 @@ regopts.xlab = 'MnCl$_2$ Concentration $[\frac{\mu mol}{L} ]$'
 regopts.ylab = 'Relaxation Rate $R_2^*$ $[Hz]$';
 doMnCl2PhantomFigure(h,regopts);
 if p.Results.addTitle; title('ExpC Regression of $MnCl_2$ Conc. $[\mu M]$ and $R_2^*$ $[Hz]$','Interpreter','latex','FontSize',14);end
-%don't plot rician fits
-%{ 
-h = figure(240); clf;
-regopts.lineOn=1;regopts.color='b';
-doScatter(lic_1p5t,ute_lic_rexp_med,100,exams,h,regopts);
-regopts.color = 'r';
-regopts.lineOn=0;
-doScatter(lic_1p5t,gre_lic_rexp_med,100,exams,h,regopts);
-legend(gca,'theo. 2x scale','UTE fits','GRE fits','Location','NorthWest');
-title('Rician Exp fit');
-%[r,m,b] = regression(lic_1p5t,ute_lic_rexp_med);
-x = [0 50];
-%plot(x,x.*r(1)+r(2),'g');
-%}
 
-%h = figure(25); clf;
-%doScatter(ute_r2_rexp_med,gre_r2_rexp_med,100,exams,h,regopts);
 if ~isempty(p.Results.savePrefix)
+    if ~isempty(p.Results.saveOnlyHandle)
+        fhandles = {fhandles{1}};
+        fhandles{1}.handle = p.Results.saveOnlyHandle;
+    end
     doSave(p.Results.savePrefix,fhandles);
 end
 
@@ -162,7 +151,7 @@ if (isfield(opts, 'lineOn') && opts.lineOn) || ~isfield(opts,'lineOn')
     licMax = ceil(max([ute,gre]));
     licMax = licMax+5-mod(licMax,5);
     arr = [0 licMax];
-    h =plot(arr,arr);xlim(arr);ylim(arr);
+    h =plot(arr,arr,'LineStyle','--','Color',[0.5 0.5 0.5]);xlim(arr);ylim(arr);
     set(h,'LineWidth',2);
 end
 
@@ -217,15 +206,19 @@ pcolb = thephantom(:,2);
 
 [regress_ute gof_ute] = fit(thephantom(:,1),thephantom(:,2),'poly1');
 regress_ute_conf = predint(regress_ute,thephantom(:,1),0.95);
+s_ute = regstats(thephantom(:,2),thephantom(:,1)); 
 [regress_gre gof_gre] = fit(thephantom(1:end-1,1),thephantom(1:end-1,3),'poly1');
 regress_gre_conf = predint(regress_gre,thephantom(:,1),0.95);
+s_gre = regstats(thephantom(:,3),thephantom(:,1)); 
 
 disp('ute');
 regress_ute
 gof_ute
+fprintf('p = %f\n\n',s_ute.fstat.pval);
 disp('gre');
 regress_gre
 gof_gre
+fprintf('p = %f\n\n',s_gre.fstat.pval);
 % fit y = ax+b
 %linfit_a = 116.7;
 %linfit_b = 1.589;

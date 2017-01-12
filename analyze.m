@@ -37,7 +37,12 @@ for n=1:length(exams)
     method=hNoPd.Technique;
     fprintf('Run %i', n);
     fitString = 'exp1_ute';
-    if max(size(strfind(completedFits,fitString)))==0
+    do1 = max(size(strfind(completedFits,fitString)))==0;
+%    do2 = ~isempty(strfind(exams{n}.savePath,'3T_023BC'));
+%    do3 = ~isempty(strfind(exams{n}.savePath,'3T_033AT'));
+%    do4 = ~isempty(strfind(exams{n}.savePath,'3T_063_LS'));
+    if do1
+        hNoPd.setMinT2Val = 1/4000;
         fprintf(' %s',fitString);
         resute = [];
         [im te dcminfo] = prepScan(exams{n}.ute);
@@ -140,7 +145,7 @@ for n=1:length(exams)
     end
     
     fitString = 'rexp1_lowfield';
-    if 1==1 %max(size(strfind(completedFits,fitString)))==0
+    if 1==0 %max(size(strfind(completedFits,fitString)))==0
         fprintf(' %s',fitString);
         [im te dcminfo] = prepScan(exams{n}.clinical);
         
