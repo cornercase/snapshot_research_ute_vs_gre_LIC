@@ -1,4 +1,4 @@
-function [] = make_fig_correlation(varargin)
+function [] = make_fig_regress_and_blandaltman(varargin)
 
 p=inputParser();
 p.addParameter('savePrefix',[]);
@@ -48,6 +48,9 @@ if p.Results.addRicianPlots
     doScatter(lic_1p5t,gre_lic_rexp_med,100,exams,h,regopts); legendText{end+1} = 'Rician GRE Fits';
 end
 h = legend(gca,legendText,'Location','NorthWest');
+makecircle(gca,[37.75 45.5],2*[2.5 2.5/.9]);
+
+
 %ht = title('3T research fits vs clinical (database) measurements');
 kids = get(h);
 set(get(kids.Children(1),'Children'),'LineWidth',2);
@@ -69,8 +72,6 @@ if p.Results.addRicianPlots
     regopts.color = 'g';regopts.marker = '^'
     doScatter(lic_1p5t_rexp,gre_lic_rexp_med,100,exams,h,regopts)
 end
-
-h = legend(gca,legendText,'Location','NorthWest');
 
 kids = get(h);
 set(get(kids.Children(1),'Children'),'LineWidth',2);
@@ -95,6 +96,7 @@ h = figure(152); clf;fhandles{end+1} = struct('handle',h,'suffix','ute_clin');
     'handle',h,'xlabel',xstring,'Interpreter',regopts.textInterpreter,'yBounds',[-80 80],...
     'showMeanStd',0);
 tstring = 'ExpC Bland Altman LIC UTE vs 1.5T GRE';
+makecircle(gca,[42 -26],2*[2 8]);
 if p.Results.addTitle; title(tstring,'Interpreter','latex','FontSize',14);end
 fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
 fprintf('\n\n');
@@ -341,6 +343,25 @@ function [] = printstats(data_mean,data_diff,md,sd,tstats)
         ts = tstats{n};
         fprintf(pstring,md{n},sd{n},ts.stats.tstat,ts.stats.sd,ts.h);
     end
+end
+
+function [] = makecircle(ax,loc,size)
+t = 0:2*pi/20:2*pi;
+x = sin(t);
+y = cos(t);
+vert = [(x'*size(1)+loc(1)) (y'*size(2)+loc(2))];
+cgray = ones(1,3)*.7;
+%h = fill(x*size(1)+loc(1),y*size(2)+loc(2),cgray);
+%h = patch('Faces',1,'Vertices',vert,'FaceColor',cgray,'FaceAlpha',.3);
+%h = plot(vert(:,1),vert(:,2),'LineWidth',2,'LineStyle','.','Color',cgray,'Marker','none');
+% Choose a number between 0 (invisible) and 1 (opaque) for facealpha.  
+%set(h,'facealpha',.5,'edgecolor','none');
+
+%b = get(ax,'Position')
+
+hc = rectangle('Position',[loc size],'Curvature',[1 1]...
+    ,'FaceColor',cgray,'EdgeColor',cgray);
+uistack(hc,'bottom');
 end
 
 function offsets = make_offsets()
