@@ -37,7 +37,7 @@ legendText = {'y=x'};
 regopts = struct('lineslope',1,'xlab','UTE_R2s_3T','ylab','GRE_R2s_3T','textOn',0,'tickFontSize',14,'tickFontName','Times New Roman','labelFontSize',14);
 h = figure(150); clf;fhandles{end+1} = struct('handle',h,'suffix','compare_all_clinical');
 
-regopts.lineslope=2;regopts.ylab='3T LIC Estimate $[\frac{mg}{g}]$';regopts.xlab='1.5 Clinical LIC Estimate $[\frac{mg}{g}]$';regopts.lineOn=1;regopts.textInterpreter='latex';
+regopts.lineslope=2;regopts.ylab='3T LIC Estimate $[\frac{mg}{g}]$';regopts.xlab='1.5T Clinical LIC Estimate $[\frac{mg}{g}]$';regopts.lineOn=1;regopts.textInterpreter='latex';
 doScatter(lic_1p5t,ute_lic_median,100,exams,h,regopts); legendText{end+1} = 'UTE fits';
 regopts.lineOn=0;regopts.color = 'r';
 doScatter(lic_1p5t,gre_lic_median,100,exams,h,regopts); legendText{end+1} = 'GRE fits';
@@ -111,7 +111,7 @@ fprintf('%s\n',tstring);printstats(data_mean,data_diff,md,sd,tstats);
 fprintf('\n\n');
 
 h = figure(157); clf;fhandles{end+1} = struct('handle',h,'suffix','phantom_UTE');
-regopts.xlab = 'MnCl$_2$ Concentration $[\frac{\mu mol}{L} ]$'
+regopts.xlab = 'MnCl$_2$ Concentration $[\frac{mmol}{L} ]$'
 regopts.ylab = 'Relaxation Rate $R_2^*$ $[Hz]$';
 doMnCl2PhantomFigure(h,regopts);
 if p.Results.addTitle; title('ExpC Regression of $MnCl_2$ Conc. $[\mu M]$ and $R_2^*$ $[Hz]$','Interpreter','latex','FontSize',14);end
