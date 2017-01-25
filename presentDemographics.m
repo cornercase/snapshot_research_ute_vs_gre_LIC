@@ -19,22 +19,24 @@ for n=1:length(exams)
         ageArray(n) = NaN;
     end
     
-    if strcmp(demos.ClinicalStatus{1},'Thalassemia Major')
-        countThal = countThal + 1;
-    else if strfind(demos.ClinicalStatus{1},'Sickle')
-            countSickle = countSickle + 1;
-        else
-            countOther = countOther +1;
+    if ~isnan(ageArray(n))
+
+        if strcmp(demos.ClinicalStatus{1},'Thalassemia Major')
+            countThal = countThal + 1;
+        else if strfind(demos.ClinicalStatus{1},'Sickle')
+                countSickle = countSickle + 1;
+            else
+                countOther = countOther +1;
+            end
+        end
+        if ~strcmp(lastAcrostic,demos.Acrostic)
+            if strcmp(demos.Gender,'F')
+                genderFemale = genderFemale + 1;
+            else
+                genderMale = genderMale + 1;
+            end
         end
     end
-    if ~strcmp(lastAcrostic,demos.Acrostic)
-        if strcmp(demos.Gender,'F')
-            genderFemale = genderFemale + 1;
-        else
-            genderMale = genderMale + 1;
-        end
-    end
-    
     lastAcrostic = demos.Acrostic;
     lic(n) = getLIC(demos.R2s_Liver_1p5T,'R2*','1.5T','expc');
 end
