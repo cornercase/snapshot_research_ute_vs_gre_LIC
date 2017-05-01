@@ -33,7 +33,7 @@ for TEidx=1:2
 
             r2s = getLIC(lic(licIdx),'LIC','3T','expc','R2*');
             sig = makeFatWaterDecaySignal(TE,r2s,ff(ffIdx),0,B0,0);
-            noise = complex(randn(1,length(TE))*0.001,randn(1,length(TE))*0.001);
+            noise = complex(randn(1,length(TE))*0.01,randn(1,length(TE))*0.01);
             sig = sig + noise;
 
 
@@ -133,7 +133,7 @@ set(hx,'FontSize',14);
 set(gca,'FontSize',14,'FontName','Times New Roman');
 ylabel('LIC Estimate Error [\%]','Interpreter','Latex')
 ylim([-15 30]);
-xlim([5 45]);
+xlim([2.5 40]);
 
 set(th,'PaperSize',[3.42 3.42*420/560]*2)
 set(th,'PaperPosition',[0 0 3.42*2 2*3.42*420/560]);
